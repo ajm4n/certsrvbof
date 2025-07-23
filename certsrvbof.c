@@ -242,12 +242,18 @@ void nh_get_template_details(char *base_url, char enrollable_templates[][128], i
             } else {
                 BeaconPrintf(CALLBACK_OUTPUT, "[*] Template: %s (%s)", display_name, template_name);
             }
-            BeaconPrintf(CALLBACK_OUTPUT, "    Purpose: %s", SAFE_STR(purpose));
-            BeaconPrintf(CALLBACK_OUTPUT, "    EKU: %s", SAFE_STR(eku));
-            BeaconPrintf(CALLBACK_OUTPUT, "    Approval: %s", SAFE_STR(manager_approval));
-            BeaconPrintf(CALLBACK_OUTPUT, "    Subject: %s", SAFE_STR(subject_supply));
-            BeaconPrintf(CALLBACK_OUTPUT, "    KeyUsage: %s", SAFE_STR(key_usage));
-            BeaconPrintf(CALLBACK_OUTPUT, "    Archival: %s", SAFE_STR(archival));
+            const char *safe_purpose = SAFE_STR(purpose);
+            const char *safe_eku = SAFE_STR(eku);
+            const char *safe_manager_approval = SAFE_STR(manager_approval);
+            const char *safe_subject_supply = SAFE_STR(subject_supply);
+            const char *safe_key_usage = SAFE_STR(key_usage);
+            const char *safe_archival = SAFE_STR(archival);
+            BeaconPrintf(CALLBACK_OUTPUT, "    Purpose: %s", safe_purpose);
+            BeaconPrintf(CALLBACK_OUTPUT, "    EKU: %s", safe_eku);
+            BeaconPrintf(CALLBACK_OUTPUT, "    Approval: %s", safe_manager_approval);
+            BeaconPrintf(CALLBACK_OUTPUT, "    Subject: %s", safe_subject_supply);
+            BeaconPrintf(CALLBACK_OUTPUT, "    KeyUsage: %s", safe_key_usage);
+            BeaconPrintf(CALLBACK_OUTPUT, "    Archival: %s", safe_archival);
             BeaconPrintf(CALLBACK_OUTPUT, "    Current user can enroll: %s", can_enroll ? "YES" : "NO");
             template_count++;
         }
