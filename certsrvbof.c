@@ -284,27 +284,28 @@ void nh_get_template_details(char *base_url, char enrollable_templates[][128], i
 }
 
 void go(char *args, int len) {
-    if (!resolve_wininet()) {
-        BeaconPrintf(CALLBACK_ERROR, "Failed to resolve WinINet APIs. wininet.dll may not be present.");
-        return;
-    }
-    datap parser;
-    char *base_url;
-    BeaconDataParse(&parser, args, len);
-    base_url = BeaconDataExtract(&parser, NULL);
-    // Ensure base_url is not NULL and is null-terminated
-    char url_buf[512] = {0};
-    if (base_url) {
-        strncpy(url_buf, base_url, sizeof(url_buf) - 1);
-        url_buf[sizeof(url_buf) - 1] = '\0';
-    }
-    if (!base_url || url_buf[0] == '\0') {
-        BeaconPrintf(CALLBACK_ERROR, "Missing or invalid URL argument.");
-        return;
-    }
-    BeaconPrintf(CALLBACK_OUTPUT, "[*] Connecting to: %s", url_buf);
-    char enrollable_templates[64][128];
-    int enrollable_count = nh_get_enrollable_templates(url_buf, enrollable_templates, 64);
-    nh_get_template_details(url_buf, enrollable_templates, enrollable_count);
+    BeaconPrintf(CALLBACK_OUTPUT, "BOF started");
+    // Comment out all other code for now
+    // if (!resolve_wininet()) {
+    //     BeaconPrintf(CALLBACK_ERROR, "Failed to resolve WinINet APIs. wininet.dll may not be present.");
+    //     return;
+    // }
+    // datap parser;
+    // char *base_url;
+    // BeaconDataParse(&parser, args, len);
+    // base_url = BeaconDataExtract(&parser, NULL);
+    // char url_buf[512] = {0};
+    // if (base_url) {
+    //     strncpy(url_buf, base_url, sizeof(url_buf) - 1);
+    //     url_buf[sizeof(url_buf) - 1] = '\0';
+    // }
+    // if (!base_url || url_buf[0] == '\0') {
+    //     BeaconPrintf(CALLBACK_ERROR, "Missing or invalid URL argument.");
+    //     return;
+    // }
+    // BeaconPrintf(CALLBACK_OUTPUT, "[*] Connecting to: %s", url_buf);
+    // char enrollable_templates[64][128];
+    // int enrollable_count = nh_get_enrollable_templates(url_buf, enrollable_templates, 64);
+    // nh_get_template_details(url_buf, enrollable_templates, enrollable_count);
 }
 
