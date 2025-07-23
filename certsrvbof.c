@@ -251,13 +251,24 @@ void nh_get_template_details(char *base_url, char enrollable_templates[][128], i
             const char *safe_subject_supply = safe_str(subject_supply);
             const char *safe_key_usage = safe_str(key_usage);
             const char *safe_archival = safe_str(archival);
-            BeaconPrintf(CALLBACK_OUTPUT, "    Purpose: %s", safe_purpose);
-            BeaconPrintf(CALLBACK_OUTPUT, "    EKU: %s", safe_eku);
-            BeaconPrintf(CALLBACK_OUTPUT, "    Approval: %s", safe_manager_approval);
-            BeaconPrintf(CALLBACK_OUTPUT, "    Subject: %s", safe_subject_supply);
-            BeaconPrintf(CALLBACK_OUTPUT, "    KeyUsage: %s", safe_key_usage);
-            BeaconPrintf(CALLBACK_OUTPUT, "    Archival: %s", safe_archival);
-            BeaconPrintf(CALLBACK_OUTPUT, "    Current user can enroll: %s", can_enroll ? "YES" : "NO");
+            // Print each field and its first 8 bytes as hex for debugging
+            const char *field_names[] = {"Purpose", "EKU", "Approval", "Subject", "KeyUsage", "Archival"};
+            const char *field_ptrs[] = {purpose, eku, manager_approval, subject_supply, key_usage, archival};
+            for (int f = 0; f < 6; f++) {
+                const char *val = field_ptrs[f];
+                const char *safe_val = safe_str(val);
+                char hexbuf[32] = {0};
+                if (val) {
+                    snprintf(hexbuf, sizeof(hexbuf), "%02x %02x %02x %02x %02x %02x %02x %02x", 
+                        (unsigned char)val[0], (unsigned char)val[1], (unsigned char)val[2], (unsigned char)val[3],
+                        (unsigned char)val[4], (unsigned char)val[5], (unsigned char)val[6], (unsigned char)val[7]);
+                } else {
+                    snprintf(hexbuf, sizeof(hexbuf), "(null)");
+                }
+                BeaconPrintf(CALLBACK_OUTPUT, "%s: %s", field_names[f], safe_val);
+                BeaconPrintf(CALLBACK_OUTPUT, "%s hex: %s", field_names[f], hexbuf);
+            }
+            BeaconPrintf(CALLBACK_OUTPUT, "Current user can enroll: %s", can_enroll ? "YES" : "NO");
             template_count++;
         }
         row = row_end + 5;
