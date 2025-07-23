@@ -77,13 +77,13 @@ int nh_get_enrollable_templates(char *base_url, char enrollable_templates[][128]
 
     HINTERNET hInternet = _InternetOpenA("certenum", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
     if (!hInternet) {
-        BeaconPrintf(CALLBACK_ERROR, "InternetOpen failed: %lu", GetLastError());
+        BeaconPrintf(CALLBACK_ERROR, "InternetOpen failed: %u", (unsigned int)GetLastError());
         return 0;
     }
 
     HINTERNET hConnect = _InternetOpenUrlA(hInternet, url, NULL, 0, INTERNET_FLAG_RELOAD, 0);
     if (!hConnect) {
-        BeaconPrintf(CALLBACK_ERROR, "InternetOpenUrl failed: %lu", GetLastError());
+        BeaconPrintf(CALLBACK_ERROR, "InternetOpenUrl failed: %u", (unsigned int)GetLastError());
         _InternetCloseHandle(hInternet);
         return 0;
     }
@@ -91,7 +91,7 @@ int nh_get_enrollable_templates(char *base_url, char enrollable_templates[][128]
     BYTE buffer[4096] = {0};
     DWORD bytesRead = 0;
     if (!_InternetReadFile(hConnect, buffer, sizeof(buffer)-1, &bytesRead)) {
-        BeaconPrintf(CALLBACK_ERROR, "InternetReadFile failed: %lu", GetLastError());
+        BeaconPrintf(CALLBACK_ERROR, "InternetReadFile failed: %u", (unsigned int)GetLastError());
         _InternetCloseHandle(hConnect);
         _InternetCloseHandle(hInternet);
         return 0;
@@ -145,13 +145,13 @@ void nh_get_template_details(char *base_url, char enrollable_templates[][128], i
 
     HINTERNET hInternet = _InternetOpenA("certenum", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
     if (!hInternet) {
-        BeaconPrintf(CALLBACK_ERROR, "InternetOpen failed: %lu", GetLastError());
+        BeaconPrintf(CALLBACK_ERROR, "InternetOpen failed: %u", (unsigned int)GetLastError());
         return;
     }
 
     HINTERNET hConnect = _InternetOpenUrlA(hInternet, url, NULL, 0, INTERNET_FLAG_RELOAD, 0);
     if (!hConnect) {
-        BeaconPrintf(CALLBACK_ERROR, "InternetOpenUrl failed: %lu", GetLastError());
+        BeaconPrintf(CALLBACK_ERROR, "InternetOpenUrl failed: %u", (unsigned int)GetLastError());
         _InternetCloseHandle(hInternet);
         return;
     }
@@ -159,7 +159,7 @@ void nh_get_template_details(char *base_url, char enrollable_templates[][128], i
     BYTE buffer[4096] = {0};
     DWORD bytesRead = 0;
     if (!_InternetReadFile(hConnect, buffer, sizeof(buffer)-1, &bytesRead)) {
-        BeaconPrintf(CALLBACK_ERROR, "InternetReadFile failed: %lu", GetLastError());
+        BeaconPrintf(CALLBACK_ERROR, "InternetReadFile failed: %u", (unsigned int)GetLastError());
         _InternetCloseHandle(hConnect);
         _InternetCloseHandle(hInternet);
         return;
