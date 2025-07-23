@@ -2,6 +2,32 @@
 #include <wininet.h>
 #include <stdio.h>
 #include "beacon.h"
+#include <tlhelp32.h>
+
+// Dynamically resolve WinINet functions
+typedef HINTERNET (WINAPI *pInternetOpenA)(LPCSTR, DWORD, LPCSTR, LPCSTR, DWORD);
+typedef HINTERNET (WINAPI *pInternetOpenUrlA)(HINTERNET, LPCSTR, LPCSTR, DWORD, DWORD, DWORD_PTR);
+typedef BOOL (WINAPI *pInternetReadFile)(HINTERNET, LPVOID, DWORD, LPDWORD);
+typedef BOOL (WINAPI *pInternetCloseHandle)(HINTERNET);
+
+static pInternetOpenA _InternetOpenA = NULL;
+static pInternetOpenUrlA _InternetOpenUrlA = NULL;
+static pInternetReadFile _InternetReadFile = NULL;
+static pInternetCloseHandle _InternetCloseHandle = NULL;
+
+int resolve_wininet() {
+    HMODULE hWininet = GetModuleHandleA("wininet.dll");
+    if (!hWininet) {
+        hWininet = LoadLibraryA("wininet.dll");
+        if (!hWininet) return 0;
+    }
+    _InternetOpenA = (pInternetOpenA)GetProcAddress(hWininet, "InternetOpenA");
+    _InternetOpenUrlA = (pInternetOpenUrlA)GetProcAddress(hWininet, "InternetOpenUrlA");
+    _InternetReadFile = (pInternetReadFile)GetProcAddress(hWininet, "InternetReadFile");
+    _InternetCloseHandle = (pInternetCloseHandle)GetProcAddress(hWininet, "InternetCloseHandle");
+    if (!_InternetOpenA || !_InternetOpenUrlA || !_InternetReadFile || !_InternetCloseHandle) return 0;
+    return 1;
+}
 
 #define MAX_BUF 8192
 #define MAX_TEMPLATE_COUNT 128
@@ -49,25 +75,25 @@ int nh_get_enrollable_templates(char *base_url, char enrollable_templates[][128]
     char url[512];
     snprintf(url, sizeof(url), "%s/certrqbi.asp", base_url);
 
-    HINTERNET hInternet = InternetOpenA("certenum", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+    HINTERNET hInternet = _InternetOpenA("certenum", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
     if (!hInternet) {
         BeaconPrintf(CALLBACK_ERROR, "InternetOpen failed: %lu", GetLastError());
         return 0;
     }
 
-    HINTERNET hConnect = InternetOpenUrlA(hInternet, url, NULL, 0, INTERNET_FLAG_RELOAD, 0);
+    HINTERNET hConnect = _InternetOpenUrlA(hInternet, url, NULL, 0, INTERNET_FLAG_RELOAD, 0);
     if (!hConnect) {
         BeaconPrintf(CALLBACK_ERROR, "InternetOpenUrl failed: %lu", GetLastError());
-        InternetCloseHandle(hInternet);
+        _InternetCloseHandle(hInternet);
         return 0;
     }
 
     BYTE buffer[4096] = {0};
     DWORD bytesRead = 0;
-    if (!InternetReadFile(hConnect, buffer, sizeof(buffer)-1, &bytesRead)) {
+    if (!_InternetReadFile(hConnect, buffer, sizeof(buffer)-1, &bytesRead)) {
         BeaconPrintf(CALLBACK_ERROR, "InternetReadFile failed: %lu", GetLastError());
-        InternetCloseHandle(hConnect);
-        InternetCloseHandle(hInternet);
+        _InternetCloseHandle(hConnect);
+        _InternetCloseHandle(hInternet);
         return 0;
     }
     buffer[bytesRead] = '\0';
@@ -75,15 +101,15 @@ int nh_get_enrollable_templates(char *base_url, char enrollable_templates[][128]
     char *start = strstr((char*)buffer, "<select name=\"CertTemplate\"");
     if (!start) {
         BeaconPrintf(CALLBACK_ERROR, "Could not find template select box");
-        InternetCloseHandle(hConnect);
-        InternetCloseHandle(hInternet);
+        _InternetCloseHandle(hConnect);
+        _InternetCloseHandle(hInternet);
         return 0;
     }
     char *end = strstr(start, "</select>");
     if (!end) {
         BeaconPrintf(CALLBACK_ERROR, "Malformed HTML");
-        InternetCloseHandle(hConnect);
-        InternetCloseHandle(hInternet);
+        _InternetCloseHandle(hConnect);
+        _InternetCloseHandle(hInternet);
         return 0;
     }
     char *p = start;
@@ -99,8 +125,8 @@ int nh_get_enrollable_templates(char *base_url, char enrollable_templates[][128]
             enrollable_count++;
         }
     }
-    InternetCloseHandle(hConnect);
-    InternetCloseHandle(hInternet);
+    _InternetCloseHandle(hConnect);
+    _InternetCloseHandle(hInternet);
     return enrollable_count;
 }
 
@@ -117,25 +143,25 @@ void nh_get_template_details(char *base_url, char enrollable_templates[][128], i
     char url[512];
     snprintf(url, sizeof(url), "%s/certtmpl.asp", base_url);
 
-    HINTERNET hInternet = InternetOpenA("certenum", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+    HINTERNET hInternet = _InternetOpenA("certenum", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
     if (!hInternet) {
         BeaconPrintf(CALLBACK_ERROR, "InternetOpen failed: %lu", GetLastError());
         return;
     }
 
-    HINTERNET hConnect = InternetOpenUrlA(hInternet, url, NULL, 0, INTERNET_FLAG_RELOAD, 0);
+    HINTERNET hConnect = _InternetOpenUrlA(hInternet, url, NULL, 0, INTERNET_FLAG_RELOAD, 0);
     if (!hConnect) {
         BeaconPrintf(CALLBACK_ERROR, "InternetOpenUrl failed: %lu", GetLastError());
-        InternetCloseHandle(hInternet);
+        _InternetCloseHandle(hInternet);
         return;
     }
 
     BYTE buffer[4096] = {0};
     DWORD bytesRead = 0;
-    if (!InternetReadFile(hConnect, buffer, sizeof(buffer)-1, &bytesRead)) {
+    if (!_InternetReadFile(hConnect, buffer, sizeof(buffer)-1, &bytesRead)) {
         BeaconPrintf(CALLBACK_ERROR, "InternetReadFile failed: %lu", GetLastError());
-        InternetCloseHandle(hConnect);
-        InternetCloseHandle(hInternet);
+        _InternetCloseHandle(hConnect);
+        _InternetCloseHandle(hInternet);
         return;
     }
     buffer[bytesRead] = '\0';
@@ -143,8 +169,8 @@ void nh_get_template_details(char *base_url, char enrollable_templates[][128], i
     char *p = strstr((char*)buffer, "<table");
     if (!p) {
         BeaconPrintf(CALLBACK_ERROR, "Could not find template table");
-        InternetCloseHandle(hConnect);
-        InternetCloseHandle(hInternet);
+        _InternetCloseHandle(hConnect);
+        _InternetCloseHandle(hInternet);
         return;
     }
     int template_count = 0;
@@ -221,11 +247,15 @@ void nh_get_template_details(char *base_url, char enrollable_templates[][128], i
         row = row_end + 5;
     }
     BeaconPrintf(CALLBACK_OUTPUT, "[*] Parsed %d templates from certtmpl.asp", template_count);
-    InternetCloseHandle(hConnect);
-    InternetCloseHandle(hInternet);
+    _InternetCloseHandle(hConnect);
+    _InternetCloseHandle(hInternet);
 }
 
 void go(char *args, int len) {
+    if (!resolve_wininet()) {
+        BeaconPrintf(CALLBACK_ERROR, "Failed to resolve WinINet APIs. wininet.dll may not be present.");
+        return;
+    }
     datap parser;
     char *base_url;
     BeaconDataParse(&parser, args, len);
