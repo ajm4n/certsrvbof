@@ -4,7 +4,6 @@
 #include "beacon.h"
 #include <tlhelp32.h>
 
-// Add safe string macro at the top
 #define SAFE_STR(x) ((x) && (x)[0] ? (x) : "(empty)")
 
 // Dynamically resolve WinINet functions
