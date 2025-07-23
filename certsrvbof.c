@@ -4,7 +4,10 @@
 #include "beacon.h"
 #include <tlhelp32.h>
 
-#define SAFE_STR(x) ((x) && (x)[0] ? (x) : "(empty)")
+// Remove the SAFE_STR macro and add a static inline function
+static const char *safe_str(const char *x) {
+    return (x && x[0]) ? x : "(empty)";
+}
 
 // Dynamically resolve WinINet functions
 typedef HINTERNET (WINAPI *pInternetOpenA)(LPCSTR, DWORD, LPCSTR, LPCSTR, DWORD);
@@ -242,12 +245,12 @@ void nh_get_template_details(char *base_url, char enrollable_templates[][128], i
             } else {
                 BeaconPrintf(CALLBACK_OUTPUT, "[*] Template: %s (%s)", display_name, template_name);
             }
-            const char *safe_purpose = SAFE_STR(purpose);
-            const char *safe_eku = SAFE_STR(eku);
-            const char *safe_manager_approval = SAFE_STR(manager_approval);
-            const char *safe_subject_supply = SAFE_STR(subject_supply);
-            const char *safe_key_usage = SAFE_STR(key_usage);
-            const char *safe_archival = SAFE_STR(archival);
+            const char *safe_purpose = safe_str(purpose);
+            const char *safe_eku = safe_str(eku);
+            const char *safe_manager_approval = safe_str(manager_approval);
+            const char *safe_subject_supply = safe_str(subject_supply);
+            const char *safe_key_usage = safe_str(key_usage);
+            const char *safe_archival = safe_str(archival);
             BeaconPrintf(CALLBACK_OUTPUT, "    Purpose: %s", safe_purpose);
             BeaconPrintf(CALLBACK_OUTPUT, "    EKU: %s", safe_eku);
             BeaconPrintf(CALLBACK_OUTPUT, "    Approval: %s", safe_manager_approval);
@@ -273,13 +276,19 @@ void go(char *args, int len) {
     char *base_url;
     BeaconDataParse(&parser, args, len);
     base_url = BeaconDataExtract(&parser, NULL);
-    if (!base_url) {
-        BeaconPrintf(CALLBACK_ERROR, "Missing URL argument.");
+    // Ensure base_url is not NULL and is null-terminated
+    char url_buf[512] = {0};
+    if (base_url) {
+        strncpy(url_buf, base_url, sizeof(url_buf) - 1);
+        url_buf[sizeof(url_buf) - 1] = '\0';
+    }
+    if (!base_url || url_buf[0] == '\0') {
+        BeaconPrintf(CALLBACK_ERROR, "Missing or invalid URL argument.");
         return;
     }
-    BeaconPrintf(CALLBACK_OUTPUT, "[*] Connecting to: %s", base_url);
+    BeaconPrintf(CALLBACK_OUTPUT, "[*] Connecting to: %s", url_buf);
     char enrollable_templates[64][128];
-    int enrollable_count = nh_get_enrollable_templates(base_url, enrollable_templates, 64);
-    nh_get_template_details(base_url, enrollable_templates, enrollable_count);
+    int enrollable_count = nh_get_enrollable_templates(url_buf, enrollable_templates, 64);
+    nh_get_template_details(url_buf, enrollable_templates, enrollable_count);
 }
 
