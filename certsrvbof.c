@@ -4,6 +4,9 @@
 #include "beacon.h"
 #include <tlhelp32.h>
 
+// Add safe string macro at the top
+#define SAFE_STR(x) ((x) && (x)[0] ? (x) : "(empty)")
+
 // Dynamically resolve WinINet functions
 typedef HINTERNET (WINAPI *pInternetOpenA)(LPCSTR, DWORD, LPCSTR, LPCSTR, DWORD);
 typedef HINTERNET (WINAPI *pInternetOpenUrlA)(HINTERNET, LPCSTR, LPCSTR, DWORD, DWORD, DWORD_PTR);
@@ -240,12 +243,12 @@ void nh_get_template_details(char *base_url, char enrollable_templates[][128], i
             } else {
                 BeaconPrintf(CALLBACK_OUTPUT, "[*] Template: %s (%s)", display_name, template_name);
             }
-            BeaconPrintf(CALLBACK_OUTPUT, "    Purpose: %s", purpose);
-            BeaconPrintf(CALLBACK_OUTPUT, "    EKU: %s", eku);
-            BeaconPrintf(CALLBACK_OUTPUT, "    Approval: %s", manager_approval);
-            BeaconPrintf(CALLBACK_OUTPUT, "    Subject: %s", subject_supply);
-            BeaconPrintf(CALLBACK_OUTPUT, "    KeyUsage: %s", key_usage);
-            BeaconPrintf(CALLBACK_OUTPUT, "    Archival: %s", archival);
+            BeaconPrintf(CALLBACK_OUTPUT, "    Purpose: %s", SAFE_STR(purpose));
+            BeaconPrintf(CALLBACK_OUTPUT, "    EKU: %s", SAFE_STR(eku));
+            BeaconPrintf(CALLBACK_OUTPUT, "    Approval: %s", SAFE_STR(manager_approval));
+            BeaconPrintf(CALLBACK_OUTPUT, "    Subject: %s", SAFE_STR(subject_supply));
+            BeaconPrintf(CALLBACK_OUTPUT, "    KeyUsage: %s", SAFE_STR(key_usage));
+            BeaconPrintf(CALLBACK_OUTPUT, "    Archival: %s", SAFE_STR(archival));
             BeaconPrintf(CALLBACK_OUTPUT, "    Current user can enroll: %s", can_enroll ? "YES" : "NO");
             template_count++;
         }
