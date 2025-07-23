@@ -240,8 +240,13 @@ void nh_get_template_details(char *base_url, char enrollable_templates[][128], i
             } else {
                 BeaconPrintf(CALLBACK_OUTPUT, "[*] Template: %s (%s)", display_name, template_name);
             }
-            BeaconPrintf(CALLBACK_OUTPUT, "    Purpose: %s | EKU: %s | Approval: %s | Subject: %s | KeyUsage: %s | Archival: %s | Current user can enroll: %s",
-                purpose, eku, manager_approval, subject_supply, key_usage, archival, can_enroll ? "YES" : "NO");
+            BeaconPrintf(CALLBACK_OUTPUT, "    Purpose: %s", purpose);
+            BeaconPrintf(CALLBACK_OUTPUT, "    EKU: %s", eku);
+            BeaconPrintf(CALLBACK_OUTPUT, "    Approval: %s", manager_approval);
+            BeaconPrintf(CALLBACK_OUTPUT, "    Subject: %s", subject_supply);
+            BeaconPrintf(CALLBACK_OUTPUT, "    KeyUsage: %s", key_usage);
+            BeaconPrintf(CALLBACK_OUTPUT, "    Archival: %s", archival);
+            BeaconPrintf(CALLBACK_OUTPUT, "    Current user can enroll: %s", can_enroll ? "YES" : "NO");
             template_count++;
         }
         row = row_end + 5;
