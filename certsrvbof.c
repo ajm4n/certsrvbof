@@ -256,7 +256,7 @@ void nh_get_template_details(char *base_url, char enrollable_templates[][128], i
             const char *field_ptrs[] = {purpose, eku, manager_approval, subject_supply, key_usage, archival};
             for (int f = 0; f < 6; f++) {
                 const char *val = field_ptrs[f];
-                const char *safe_val = safe_str(val);
+                int vlen = (val ? (int)strlen(val) : 0);
                 char hexbuf[32] = {0};
                 if (val) {
                     snprintf(hexbuf, sizeof(hexbuf), "%02x %02x %02x %02x %02x %02x %02x %02x", 
@@ -265,8 +265,13 @@ void nh_get_template_details(char *base_url, char enrollable_templates[][128], i
                 } else {
                     snprintf(hexbuf, sizeof(hexbuf), "(null)");
                 }
-                BeaconPrintf(CALLBACK_OUTPUT, "%s: %s", field_names[f], safe_val);
+                BeaconPrintf(CALLBACK_OUTPUT, "%s length: %d", field_names[f], vlen);
                 BeaconPrintf(CALLBACK_OUTPUT, "%s hex: %s", field_names[f], hexbuf);
+                if (vlen > 0 && vlen < 256) {
+                    BeaconPrintf(CALLBACK_OUTPUT, "%s: %s", field_names[f], val);
+                } else {
+                    BeaconPrintf(CALLBACK_OUTPUT, "%s: (not printable, skipped)", field_names[f]);
+                }
             }
             BeaconPrintf(CALLBACK_OUTPUT, "Current user can enroll: %s", can_enroll ? "YES" : "NO");
             template_count++;
